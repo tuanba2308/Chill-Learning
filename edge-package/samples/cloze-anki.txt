@@ -1,0 +1,5 @@
+Thủ đô của Nhật Bản là {{c1::Tokyo}}.
+
+Ngọn núi cao nhất Nhật Bản là núi {{c1::Phú Sĩ}}, cao khoảng {{c2::3776::số mét}} mét.
+
+Đơn vị tiền tệ của Nhật Bản là {{c1::yên}}.

@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Chill Learn — bài học tương tác trên YouTube",
+  "short_name": "Chill Learn",
+  "version": "1.2.1",
+  "description": "Chèn bài học và quiz từ file .md của bạn lên video YouTube theo mốc thời gian. Vừa xem video chill vừa học, có chấm điểm.",
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "permissions": ["storage"],
+  "action": { "default_popup": "popup.html", "default_title": "Chill Learn" },
+  "options_page": "results.html",
+  "background": { "service_worker": "background.js" },
+  "web_accessible_resources": [
+    { "resources": ["samples/*"], "matches": ["*://*.youtube.com/*"] }
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["core.js", "importer.js", "i18n.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Chill Learn</title>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body class="popup">
+  <header>
+    <h1>Chill Learn</h1>
+    <select data-k="lang" id="lang" aria-label="Ngôn ngữ / Language" style="width:auto;margin:0 10px 0 auto">
+      <option value="vi">Tiếng Việt</option>
+      <option value="en">English</option>
+    </select>
+    <label class="switch" title="Bật / tắt lớp bài học trên YouTube">
+      <input type="checkbox" data-k="enabled"><span></span>
+    </label>
+  </header>
+
+  <section>
+    <h2>Bài học</h2>
+    <div class="row">
+      <select id="lessonSelect" aria-label="Bài học đang dùng"></select>
+      <button id="delLesson" class="ghost" title="Xóa bài đang chọn">Xóa</button>
+    </div>
+    <div class="row">
+      <button id="loadBtn" class="primary">Tải file .md</button>
+      <button id="loadDirBtn" class="ghost" title="Nạp mọi file .md trong một thư mục">Nạp thư mục</button>
+    </div>
+    <div class="row">
+      <select id="sampleSelect" aria-label="Nạp bài mẫu">
+        <option value="">Nạp bài mẫu…</option>
+        <optgroup label="Hướng dẫn và bài chuẩn">
+          <option value="huong-dan-su-dung.md">Hướng dẫn sử dụng (bắt đầu ở đây)</option>
+          <option value="user-guide-en.md">User guide (English)</option>
+          <option value="bai-hoc-chuan.md">Bài học chuẩn: đủ mọi tính năng</option>
+          <option value="demo-nhanh-1-phut.md">Demo nhanh 1 phút</option>
+        </optgroup>
+        <optgroup label="Thử từng kiểu đầu vào">
+          <option value="flashcard.csv">Flashcard .csv (từ, nghĩa, ghi chú)</option>
+          <option value="flashcard-cap-tu.txt">Flashcard dạng "từ - nghĩa" .txt</option>
+          <option value="hoi-dap.csv">Bảng hỏi–đáp .csv</option>
+          <option value="hoi-dap-qa.txt">Hỏi / Đáp từng dòng .txt</option>
+          <option value="ghi-chu.md">Ghi chú có tiêu đề mục .md</option>
+          <option value="van-ban-thuong.txt">Văn bản thường .txt</option>
+          <option value="cloze-anki.txt">Cloze kiểu Anki .txt</option>
+          <option value="gan-dung-dinh-dang.md">Bài gần đúng định dạng (tự sửa)</option>
+        </optgroup>
+        <optgroup label="Bài theo chủ đề">
+          <option value="bai-mau.md">Tiếng Anh: từ vựng thư giãn</option>
+          <option value="tieng-nhat-chao-hoi.md">Tiếng Nhật: chào hỏi cơ bản</option>
+          <option value="python-co-ban.md">Python: list và vòng lặp</option>
+          <option value="he-mat-troi.md">Khoa học: Hệ Mặt Trời</option>
+          <option value="ky-nang-hoc-tap.md">Kỹ năng: học sao cho nhớ lâu</option>
+        </optgroup>
+      </select>
+      <input type="file" id="file" accept=".md,.markdown,.txt,.csv,.tsv" multiple hidden>
+      <input type="file" id="dir" webkitdirectory multiple hidden>
+    </div>
+    <div class="row"><button id="loadAllSamples" class="ghost" style="flex:1">Nạp toàn bộ bài mẫu</button></div>
+    <div class="row"><button id="openImport" class="ghost" style="flex:1">Tạo / chuyển đổi bài học (dán văn bản, CSV, PDF)…</button></div>
+    <p id="lessonInfo" class="muted"></p>
+    <ul id="warnings" class="warn"></ul>
+  </section>
+
+  <section>
+    <h2>Kết quả gần nhất</h2>
+    <div id="lastResult" class="muted">Chưa có phiên học nào.</div>
+    <div class="row"><button id="openResults" class="ghost">Xem chi tiết tất cả phiên</button></div>
+  </section>
+
+  <details open>
+    <summary>Khung, chữ và màu</summary>
+    <label>Kiểu khung
+      <select data-k="cardStyle">
+        <option value="solid">Nền màu (chỉnh độ đặc bên dưới)</option>
+        <option value="outline">Chỉ viền — nền trong suốt hoàn toàn</option>
+      </select>
+    </label>
+    <label>Vị trí khung (kéo đầu khung để dời, kéo góc dưới phải để đổi kích thước)
+      <select data-k="cardPos">
+        <option value="auto">Tự động: thẻ ở giữa, dải ở dưới</option>
+        <option value="center">Giữa</option>
+        <option value="top">Trên</option>
+        <option value="bottom">Dưới</option>
+        <option value="left">Trái</option>
+        <option value="right">Phải</option>
+        <option value="top-left">Trên trái</option>
+        <option value="top-right">Trên phải</option>
+        <option value="bottom-left">Dưới trái</option>
+        <option value="bottom-right">Dưới phải</option>
+      </select>
+    </label>
+    <div class="row"><button id="resetPos" class="ghost">Đặt lại vị trí và kích thước khung</button></div>
+    <label>Font chữ
+      <select data-k="fontFamily">
+        <option value="system">Mặc định hệ thống</option>
+        <option value="rounded">Tròn, hiện đại</option>
+        <option value="serif">Có chân (serif)</option>
+        <option value="mono">Đơn cách (mono)</option>
+        <option value="hand">Viết tay</option>
+        <option value="jp">Tiếng Nhật (Yu Gothic)</option>
+      </select>
+    </label>
+    <label>Font tùy chỉnh <input type="text" data-k="fontCustom" placeholder="vd: Be Vietnam Pro"></label>
+    <label>Cỡ chữ <output></output><input type="range" data-k="fontScale" min="70" max="180" step="5" data-unit="%"></label>
+    <div class="colors">
+      <label>Màu chữ <input type="color" data-k="textColor"></label>
+      <label>Màu nền thẻ <input type="color" data-k="cardColor"></label>
+      <label>Màu nhấn <input type="color" data-k="accentColor"></label>
+    </div>
+    <label>Độ đặc nền thẻ <output></output><input type="range" data-k="cardOpacity" min="0" max="100" step="2" data-unit="%"></label>
+    <label>Làm tối video khi hiện thẻ <output></output><input type="range" data-k="dimOpacity" min="0" max="85" step="5" data-unit="%"></label>
+  </details>
+
+  <details>
+    <summary>Cách hiển thị theo video</summary>
+    <label>Khi bài dài hơn / ngắn hơn video
+      <select data-k="fitMode">
+        <option value="auto">Tự tối ưu: lược khối ít ưu tiên, co mốc</option>
+        <option value="spread">Giãn đều các mốc theo cả video</option>
+        <option value="original">Giữ nguyên mốc trong file</option>
+      </select>
+    </label>
+    <label>Tạm dừng video
+      <select data-k="pauseMode">
+        <option value="none">Không — video chạy nền</option>
+        <option value="quiz">Chỉ khi có câu hỏi</option>
+        <option value="all">Mỗi khi hiện bài hoặc câu hỏi</option>
+      </select>
+    </label>
+    <label>Khoảng cách tối thiểu giữa các mốc <output></output><input type="range" data-k="minGap" min="5" max="90" step="5" data-unit="s"></label>
+    <label class="check"><input type="checkbox" data-k="autoAdvance"> Tự chuyển thẻ theo mốc thời gian (có đếm ngược)</label>
+    <label class="check"><input type="checkbox" data-k="showMarkers"> Hiện mốc trên thanh tiến trình</label>
+    <label class="check"><input type="checkbox" data-k="shuffleOptions"> Trộn thứ tự đáp án</label>
+    <label class="check"><input type="checkbox" data-k="endSummary"> Hiện bảng kết quả ở cuối video</label>
+    <div class="row"><button id="resetSettings" class="ghost">Đặt lại mặc định</button></div>
+  </details>
+
+  <script src="core.js"></script>
+  <script src="importer.js"></script>
+  <script src="i18n.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

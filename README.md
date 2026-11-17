@@ -1,14 +1,14 @@
-# Chill Learn — bài học tương tác trên YouTube (Edge / Chrome)
+# Chill Learn — bài học tương tác trên YouTube (Microsoft Edge)
 
 Mở một video chill bất kỳ, bài học và quiz từ file `.md` của bạn hiện ngay trên video theo mốc thời gian.
 Video chạy như hình nền, bạn đọc bài, trả lời câu hỏi, cuối video có bảng kết quả.
 Extension chạy hoàn toàn bằng thuật toán trên máy bạn: không gọi AI, không gửi dữ liệu đi đâu.
 
-## Cài vào Edge
+## Cài vào Microsoft Edge
 
 1. Mở `edge://extensions`
 2. Bật **Developer mode** (góc trái dưới)
-3. Bấm **Load unpacked** và chọn thư mục này (`D:\Ext-Popup learning`)
+3. Bấm **Load unpacked** và chọn thư mục này
 4. Ghim biểu tượng Chill Learn lên thanh công cụ
 
 ## Dùng

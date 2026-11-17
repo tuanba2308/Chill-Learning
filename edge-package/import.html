@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chill Learn — Tạo và nhập bài học</title>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body class="page">
+  <div class="wrap wide">
+    <header>
+      <h1>Tạo và nhập bài học</h1>
+      <div class="row" style="margin:0">
+        <button id="openResults" class="ghost">Kết quả học</button>
+      </div>
+    </header>
+
+    <div class="cols">
+      <section>
+        <h2>1. Nội dung nguồn</h2>
+        <div id="drop" class="drop">
+          Kéo thả file vào đây hoặc
+          <button id="pick" class="ghost">Chọn file</button>
+          <div class="muted">.md · .txt · .csv · .tsv · .pdf — chọn nhiều file để nhập hàng loạt</div>
+          <input type="file" id="file" accept=".md,.markdown,.txt,.csv,.tsv,.pdf" multiple hidden>
+        </div>
+        <label>Hoặc dán nội dung
+          <textarea id="src" rows="12" spellcheck="false" placeholder="Ví dụ flashcard, mỗi dòng một thẻ:
+cat, con mèo
+dog, con chó
+bird, con chim"></textarea>
+        </label>
+        <label>Tên bài học <input type="text" id="name" placeholder="vd: Từ vựng bài 3"></label>
+        <div class="opts">
+          <label>Kiểu nội dung
+            <select id="kind">
+              <option value="auto">Tự nhận diện</option>
+              <option value="native">Bài học chuẩn &lt;lesson&gt;/&lt;quiz&gt;</option>
+              <option value="cards">Flashcard (từ – nghĩa)</option>
+              <option value="qa">Bảng hỏi–đáp</option>
+              <option value="qalines">Các cặp Q: / A:</option>
+              <option value="doc">Ghi chú có tiêu đề mục</option>
+              <option value="prose">Văn bản thường</option>
+            </select>
+          </label>
+          <label>Văn bản thường thì
+            <select id="prose">
+              <option value="split">Cắt thành nhiều thẻ vừa khung</option>
+              <option value="scroll">Một thẻ lớn có thanh cuộn</option>
+            </select>
+          </label>
+        </div>
+        <div class="opts">
+          <label>Giây giữa các mốc <input type="number" id="gap" value="45" min="15" max="600"></label>
+          <label>Số thẻ mỗi nhóm <input type="number" id="group" value="4" min="2" max="8"></label>
+          <label>Chữ mỗi thẻ khi cắt <input type="number" id="maxWords" value="55" min="20" max="200"></label>
+        </div>
+        <label class="check"><input type="checkbox" id="cloze" checked> Tự tạo câu điền từ từ chữ <b>in đậm</b> / ==tô vàng==</label>
+        <div class="row"><button id="convert" class="primary">Chuyển đổi và xem trước</button></div>
+        <p id="status" class="muted"></p>
+        <ul id="batch" class="batch"></ul>
+      </section>
+
+      <section>
+        <h2>2. Bài học (sửa được trước khi lưu)</h2>
+        <p id="info" class="muted">Chưa có gì. Chọn file hoặc dán nội dung rồi bấm Chuyển đổi.</p>
+        <ul id="fixes" class="fixes"></ul>
+        <ul id="warn" class="warn"></ul>
+        <textarea id="out" rows="22" spellcheck="false"></textarea>
+        <div class="row">
+          <button id="save" class="primary" disabled>Lưu vào thư viện</button>
+          <button id="download" class="ghost" disabled>Tải file .md</button>
+        </div>
+      </section>
+    </div>
+
+    <section>
+      <h2>Các kiểu nội dung được nhận</h2>
+      <div class="guide">
+        <div><b>Flashcard</b> (kiểu Quizlet / Anki)<pre>từ, nghĩa, ghi chú
+cat, con mèo
+dog, con chó</pre>Mỗi dòng một thẻ. Ngăn bằng tab, dấu phẩy, chấm phẩy, hoặc <code>từ - nghĩa</code>, <code>từ :: nghĩa</code>, <code>từ: nghĩa</code>. Tự tạo bảng từ và câu hỏi nghĩa xuôi / ngược.</div>
+        <div><b>Bảng hỏi–đáp</b> (có dòng tiêu đề)<pre>question;answer;wrong1;wrong2;explain
+Thủ đô Nhật?;Tokyo;Osaka;Kyoto;…</pre>Có cột đáp án sai thì thành câu chọn đáp án, không có thì thành câu điền chữ.</div>
+        <div><b>Hỏi / Đáp từng dòng</b><pre>Q: H2O là gì?
+A: nước</pre>Cũng nhận <code>Hỏi:</code> / <code>Đáp:</code>.</div>
+        <div><b>Ghi chú, markdown, PDF</b><pre>## Tiêu đề mục
+Nội dung có **từ khóa**…
+
+## Câu 1
+A. …  B. …
+Đáp án: B</pre>Mỗi mục thành một thẻ; mục có "Đáp án:" thành câu hỏi. Không có tiêu đề thì chia theo đoạn.</div>
+        <div><b>Cloze của Anki</b><pre>Thủ đô của Pháp là {{c1::Paris}}.</pre>Thành thẻ có từ tô vàng kèm câu điền chỗ trống.</div>
+        <div><b>Bài học chuẩn</b><pre>&lt;lesson time="30s"&gt; … &lt;/lesson&gt;
+&lt;quiz&gt; … &lt;/quiz&gt;</pre>Nhập nguyên vẹn, không chuyển đổi.</div>
+      </div>
+      <p class="muted">Bài viết gần đúng định dạng (bọc trong khối code, thẻ <code>[lesson]</code>, <code>&amp;lt;lesson&amp;gt;</code>, đáp án <code>[x] …</code> thiếu gạch đầu dòng, "Đáp án: B"…) được tự sửa và liệt kê những gì đã sửa. Nhận diện sai thì chọn lại ở ô <b>Kiểu nội dung</b>.</p>
+      <p class="muted">Văn bản thường và PDF không có sẵn câu hỏi: bộ chuyển chỉ tạo được thẻ bài học và câu điền từ từ chữ in đậm. Muốn có câu hỏi hay hơn, dùng prompt bên dưới với một AI bất kỳ rồi dán kết quả vào ô nội dung.</p>
+    </section>
+
+    <section>
+      <h2>Prompt chuẩn để nhờ AI chuyển nội dung thành bài học</h2>
+      <textarea id="prompt" rows="12" readonly spellcheck="false"></textarea>
+      <div class="row"><button id="copyPrompt" class="ghost">Chép prompt</button></div>
+    </section>
+  </div>
+  <script src="core.js"></script>
+  <script src="importer.js"></script>
+  <script src="i18n.js"></script>
+  <script src="import.js"></script>
+</body>
+</html>
