@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chill Learn — Kết quả học</title>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body class="page">
+  <div class="wrap">
+    <header>
+      <h1>Kết quả học</h1>
+      <div class="row" style="margin:0">
+        <button id="export" class="ghost">Xuất JSON</button>
+        <button id="clear" class="ghost">Xóa lịch sử</button>
+      </div>
+    </header>
+    <div id="tiles" class="tiles"></div>
+    <section id="hardBox" hidden>
+      <h2>Câu hay sai nhất</h2>
+      <div id="hard"></div>
+    </section>
+    <h2 style="margin-top:22px">Các phiên học</h2>
+    <div id="sessions"></div>
+  </div>
+  <script src="core.js"></script>
+  <script src="i18n.js"></script>
+  <script src="results.js"></script>
+</body>
+</html>

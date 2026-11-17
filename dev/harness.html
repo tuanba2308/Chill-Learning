@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Chill Learn — trình phát giả lập</title>
+<link rel="stylesheet" href="../content.css">
+<style>
+  body { margin: 0; background: #0b0d14; color: #dfe3ee; font: 14px system-ui, sans-serif; padding: 20px; }
+  #movie_player { position: relative; width: min(100%, 960px); aspect-ratio: 16 / 9; margin: 0 auto; overflow: hidden; border-radius: 10px;
+    background: linear-gradient(135deg, #24476b, #6a3d7a 55%, #c7724e); }
+  #movie_player:fullscreen { border-radius: 0; }
+  #movie_player video { width: 100%; height: 100%; }
+  .ytp-progress-bar { position: absolute; left: 12px; right: 12px; bottom: 26px; height: 5px; background: rgba(255,255,255,.3); z-index: 2001; }
+  #fill { height: 100%; width: 0; background: #f33; }
+  .ytp-fullscreen-button { position: absolute; right: 12px; bottom: 2px; z-index: 2001; background: none; border: 0; color: #fff; cursor: pointer; }
+  .bar { width: min(100%, 960px); margin: 14px auto; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .bar input[type=range] { flex: 1; min-width: 200px; }
+  button, select, input[type=number] { font: inherit; padding: 5px 10px; }
+  .ytp-right-controls .ytp-button { width: 30px; height: 24px; background: none; border: 0; padding: 0; cursor: pointer; }
+</style>
+</head>
+<body>
+  <div id="movie_player">
+    <video></video>
+    <div class="ytp-progress-bar"><div id="fill"></div></div>
+    <div class="ytp-right-controls" style="position:absolute;right:40px;bottom:0;height:24px;z-index:2001;display:flex"></div>
+    <button class="ytp-fullscreen-button" onclick="document.fullscreenElement ? document.exitFullscreen() : document.getElementById('movie_player').requestFullscreen()">⛶</button>
+  </div>
+  <div class="bar">
+    <button id="play">▶ Phát</button>
+    <input id="seek" type="range" min="0" max="100" step="0.1" value="0">
+    <span id="clock">0:00 / 0:00</span>
+  </div>
+  <div class="bar">
+    <label>Độ dài video (giây) <input id="dur" type="number" value="240" min="10" style="width:90px"></label>
+    <label>Tốc độ <select id="rate"><option>1</option><option>4</option><option selected>10</option></select>×</label>
+    <label>Bài học <input id="file" type="file" accept=".md,.txt"></label>
+    <button id="sample">Nạp bài mẫu</button>
+    <button id="allSamples">Nạp cả 6 bài mẫu</button>
+    <button id="nextVideo">Sang video khác</button>
+  </div>
+
+<script>
+  // --- Giả lập chrome.storage / runtime ---
+  // lưu vào localStorage để thử cả tình huống tải lại trang (thêm ?reset để xóa)
+  if (location.search.includes("reset")) localStorage.removeItem("ytl-harness");
+  const store = JSON.parse(localStorage.getItem("ytl-harness") || "{}");
+  const listeners = [];
+  const c = window.chrome = window.chrome || {};
+  c.runtime = { id: 'harness', sendMessage: (m) => console.log('sendMessage', m), getURL: (p) => '../' + p };
+  c.storage = {
+    local: {
+      get: async (keys) => {
+        const ks = keys == null ? Object.keys(store) : [].concat(keys);
+        const out = {};
+        ks.forEach((k) => { if (k in store) out[k] = JSON.parse(JSON.stringify(store[k])); });
+        return out;
+      },
+      set: async (obj) => {
+        const ch = {};
+        Object.keys(obj).forEach((k) => { ch[k] = { oldValue: store[k], newValue: obj[k] }; store[k] = JSON.parse(JSON.stringify(obj[k])); });
+        localStorage.setItem("ytl-harness", JSON.stringify(store));
+        listeners.forEach((fn) => fn(ch, 'local'));
+      }
+    },
+    onChanged: { addListener: (fn) => listeners.push(fn) }
+  };
+  window.__store = store;
+
+  // --- Video giả: đồng hồ mô phỏng ---
+  const video = document.querySelector('video');
+  const sim = window.__sim = { t: 0, d: 240, paused: true, rate: 10 };
+  Object.defineProperty(video, 'duration', { get: () => sim.d, configurable: true });
+  Object.defineProperty(video, 'currentTime', { get: () => sim.t, set: (v) => { sim.t = Math.max(0, Math.min(sim.d, v)); fire('timeupdate'); }, configurable: true });
+  Object.defineProperty(video, 'paused', { get: () => sim.paused, configurable: true });
+  Object.defineProperty(video, 'ended', { get: () => sim.t >= sim.d, configurable: true });
+  video.play = () => { sim.paused = false; ui(); return Promise.resolve(); };
+  video.pause = () => { sim.paused = true; ui(); };
+  const fire = (t) => { video.dispatchEvent(new Event(t)); ui(); };
+  const f = (s) => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+  function ui() {
+    document.getElementById('clock').textContent = f(sim.t) + ' / ' + f(sim.d);
+    document.getElementById('seek').max = sim.d;
+    document.getElementById('seek').value = sim.t;
+    document.getElementById('fill').style.width = (sim.t / sim.d) * 100 + '%';
+    document.getElementById('play').textContent = sim.paused ? '▶ Phát' : '⏸ Dừng';
+  }
+  setInterval(() => {
+    if (sim.paused) return;
+    sim.t = Math.min(sim.d, sim.t + 0.25 * sim.rate / 4);
+    fire('timeupdate');
+    if (sim.t >= sim.d) { sim.paused = true; fire('ended'); }
+  }, 250 / 4);
+  document.getElementById('play').onclick = () => (sim.paused ? video.play() : video.pause());
+  document.getElementById('seek').oninput = (e) => { video.currentTime = Number(e.target.value); };
+  document.getElementById('dur').onchange = (e) => { sim.d = Number(e.target.value) || 240; sim.t = 0; fire('durationchange'); };
+  document.getElementById('rate').onchange = (e) => { sim.rate = Number(e.target.value); };
+  document.getElementById('file').onchange = async (e) => {
+    const file = e.target.files[0];
+    if (file) await YTL.saveLesson(file.name, await file.text());
+  };
+  document.getElementById('sample').onclick = async () => {
+    await YTL.saveLesson('bai-mau', await (await fetch('../samples/bai-mau.md')).text());
+  };
+  document.getElementById('allSamples').onclick = async () => {
+    const names = ['demo-nhanh-1-phut', 'bai-mau', 'tieng-nhat-chao-hoi', 'python-co-ban', 'he-mat-troi', 'ky-nang-hoc-tap'];
+    const items = [];
+    for (const n of names) items.push({ name: n, text: await (await fetch('../samples/' + n + '.md')).text() });
+    await YTL.saveLessons(items, false);
+  };
+  // Giả lập YouTube chuyển sang video khác (SPA): đổi ?v=, về giây 0, bắn yt-navigate-finish.
+  document.getElementById('nextVideo').onclick = () => {
+    history.pushState(null, '', '?v=vid' + Date.now().toString(36));
+    sim.t = 0; sim.paused = false;
+    fire('durationchange');
+    document.dispatchEvent(new Event('yt-navigate-finish'));
+  };
+  ui();
+</script>
+<script src="../core.js"></script>
+<script src="../importer.js"></script>
+<script src="../i18n.js"></script>
+<script src="../content.js"></script>
+</body>
+</html>
